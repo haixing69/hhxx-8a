@@ -1,0 +1,71 @@
+
+{
+  "name": "live_run",
+  "title": "实盘运行记录",
+  "schemas": [
+    {
+      "name": "strategyId",
+      "title": "策略ID",
+      "type": "String"
+    },
+    {
+      "name": "status",
+      "title": "运行状态",
+      "type": "String"
+    },
+    {
+      "name": "startTime",
+      "title": "启动时间",
+      "type": "Number"
+    },
+    {
+      "name": "stopTime",
+      "title": "停止时间",
+      "type": "Number"
+    },
+    {
+      "name": "currentCash",
+      "title": "当前现金",
+      "type": "Number"
+    },
+    {
+      "name": "currentValue",
+      "title": "当前总价值",
+      "type": "Number"
+    },
+    {
+      "name": "totalReturn",
+      "title": "总收益率",
+      "type": "Number"
+    },
+    {
+      "name": "totalTrades",
+      "title": "总交易次数",
+      "type": "Number"
+    },
+    {
+      "name": "winRate",
+      "title": "胜率",
+      "type": "Number"
+    },
+    {
+      "name": "trades",
+      "title": "实盘交易记录",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    },
+    {
+      "name": "parameters",
+      "title": "实盘参数",
+      "type": "Object"
+    },
+    {
+      "name": "lastTradeTime",
+      "title": "最后交易时间",
+      "type": "Number"
+    }
+  ]
+}
+  

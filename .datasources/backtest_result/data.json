@@ -1,0 +1,231 @@
+
+[
+  {
+    "_id": "bt_result_1",
+    "strategyId": "bt-1",
+    "startDate": "2024-01-01",
+    "endDate": "2024-09-30",
+    "initialCash": 10000,
+    "finalValue": 11570,
+    "totalReturn": 15.7,
+    "annualReturn": 21.3,
+    "sharpeRatio": 1.8,
+    "maxDrawdown": -8.2,
+    "winRate": 68,
+    "totalTrades": 45,
+    "profitFactor": 1.6,
+    "avgHoldingDays": 3.2,
+    "trades": [
+      {
+        "date": "2024-01-15",
+        "time": "09:30:00",
+        "symbol": "BTC-USDT",
+        "action": "BUY",
+        "price": 42500,
+        "quantity": 0.235,
+        "value": 9987.5,
+        "commission": 9.99
+      },
+      {
+        "date": "2024-01-20",
+        "time": "14:15:00",
+        "symbol": "BTC-USDT",
+        "action": "SELL",
+        "price": 43800,
+        "quantity": 0.235,
+        "value": 10293,
+        "commission": 10.29,
+        "profit": 285.21
+      },
+      {
+        "date": "2024-02-05",
+        "time": "11:45:00",
+        "symbol": "BTC-USDT",
+        "action": "BUY",
+        "price": 43200,
+        "quantity": 0.238,
+        "value": 10281.6,
+        "commission": 10.28
+      }
+    ],
+    "equityCurve": [
+      {
+        "date": "2024-01-01",
+        "value": 10000,
+        "return": 0
+      },
+      {
+        "date": "2024-01-02",
+        "value": 10050,
+        "return": 0.5
+      },
+      {
+        "date": "2024-01-03",
+        "value": 10120,
+        "return": 1.2
+      },
+      {
+        "date": "2024-01-04",
+        "value": 10080,
+        "return": 0.8
+      },
+      {
+        "date": "2024-01-05",
+        "value": 10230,
+        "return": 2.3
+      }
+    ],
+    "parameters": {
+      "startDate": "2024-01-01",
+      "endDate": "2024-09-30",
+      "initialCapital": 10000,
+      "commission": 0.001,
+      "slippage": 0.0005,
+      "strategy": "均线突破"
+    },
+    "createdAt": 1729238400000,
+    "updatedAt": 1729238400000,
+    "owner": "demo_user_1",
+    "createBy": "demo_user_1",
+    "updateBy": "demo_user_1"
+  },
+  {
+    "_id": "bt_result_2",
+    "strategyId": "bt-2",
+    "startDate": "2024-01-01",
+    "endDate": "2024-09-30",
+    "initialCash": 10000,
+    "finalValue": 9680,
+    "totalReturn": -3.2,
+    "annualReturn": -4.3,
+    "sharpeRatio": -0.5,
+    "maxDrawdown": -12.5,
+    "winRate": 45,
+    "totalTrades": 38,
+    "profitFactor": 0.8,
+    "avgHoldingDays": 2.1,
+    "trades": [
+      {
+        "date": "2024-01-10",
+        "time": "10:30:00",
+        "symbol": "ETH-USDT",
+        "action": "BUY",
+        "price": 2580,
+        "quantity": 3.876,
+        "value": 9999.08,
+        "commission": 10.0
+      },
+      {
+        "date": "2024-01-12",
+        "time": "15:20:00",
+        "symbol": "ETH-USDT",
+        "action": "SELL",
+        "price": 2520,
+        "quantity": 3.876,
+        "value": 9767.52,
+        "commission": 9.77,
+        "profit": -241.33
+      }
+    ],
+    "equityCurve": [
+      {
+        "date": "2024-01-01",
+        "value": 10000,
+        "return": 0
+      },
+      {
+        "date": "2024-01-02",
+        "value": 9950,
+        "return": -0.5
+      },
+      {
+        "date": "2024-01-03",
+        "value": 9820,
+        "return": -1.8
+      }
+    ],
+    "parameters": {
+      "startDate": "2024-01-01",
+      "endDate": "2024-09-30",
+      "initialCapital": 10000,
+      "commission": 0.001,
+      "slippage": 0.0005,
+      "strategy": "RSI反转"
+    },
+    "createdAt": 1728633600000,
+    "updatedAt": 1728633600000,
+    "owner": "demo_user_1",
+    "createBy": "demo_user_1",
+    "updateBy": "demo_user_1"
+  },
+  {
+    "_id": "bt_result_3",
+    "strategyId": "bt-3",
+    "startDate": "2024-01-01",
+    "endDate": "2024-09-30",
+    "initialCash": 10000,
+    "finalValue": 10890,
+    "totalReturn": 8.9,
+    "annualReturn": 12.1,
+    "sharpeRatio": 1.2,
+    "maxDrawdown": -5.8,
+    "winRate": 62,
+    "totalTrades": 52,
+    "profitFactor": 1.4,
+    "avgHoldingDays": 4.5,
+    "trades": [
+      {
+        "date": "2024-01-08",
+        "time": "09:15:00",
+        "symbol": "LTC-USDT",
+        "action": "BUY",
+        "price": 72.5,
+        "quantity": 137.93,
+        "value": 9999.93,
+        "commission": 10.0
+      },
+      {
+        "date": "2024-01-15",
+        "time": "14:30:00",
+        "symbol": "LTC-USDT",
+        "action": "SELL",
+        "price": 78.2,
+        "quantity": 137.93,
+        "value": 10786.13,
+        "commission": 10.79,
+        "profit": 766.4
+      }
+    ],
+    "equityCurve": [
+      {
+        "date": "2024-01-01",
+        "value": 10000,
+        "return": 0
+      },
+      {
+        "date": "2024-01-02",
+        "value": 10080,
+        "return": 0.8
+      },
+      {
+        "date": "2024-01-03",
+        "value": 10150,
+        "return": 1.5
+      }
+    ],
+    "parameters": {
+      "startDate": "2024-01-01",
+      "endDate": "2024-09-30",
+      "initialCapital": 10000,
+      "commission": 0.001,
+      "slippage": 0.0005,
+      "strategy": "MACD趋势"
+    },
+    "createdAt": 1729252800000,
+    "updatedAt": 1729252800000,
+    "owner": "demo_user_1",
+    "createBy": "demo_user_1",
+    "updateBy": "demo_user_1"
+  }
+]
+  

@@ -1,0 +1,57 @@
+
+{
+  "name": "okx_config",
+  "title": "OKX API配置",
+  "schemas": [
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "apiKey",
+      "title": "API Key",
+      "type": "String"
+    },
+    {
+      "name": "secretKey",
+      "title": "Secret Key",
+      "type": "String"
+    },
+    {
+      "name": "passphrase",
+      "title": "Passphrase",
+      "type": "String"
+    },
+    {
+      "name": "sandbox",
+      "title": "沙盒环境",
+      "type": "Boolean"
+    },
+    {
+      "name": "permissions",
+      "title": "权限列表",
+      "type": "Array",
+      "items": {
+        "type": "String"
+      }
+    },
+    {
+      "name": "isActive",
+      "title": "是否激活",
+      "type": "Boolean"
+    },
+    {
+      "name": "lastTested",
+      "title": "最后测试时间",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    },
+    {
+      "name": "accountInfo",
+      "title": "账户信息",
+      "type": "Object"
+    }
+  ]
+}
+  

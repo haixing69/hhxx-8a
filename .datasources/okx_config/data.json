@@ -1,0 +1,70 @@
+
+[
+  {
+    "_id": "config_demo_user_1",
+    "userId": "demo_user_1",
+    "apiKey": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "secretKey": "s3cr3t_k3y_f0r_d3m0_us3r_1_2024",
+    "passphrase": "demo_passphrase_123",
+    "sandbox": true,
+    "permissions": ["read", "trade"],
+    "isActive": true,
+    "lastTested": 1729238400000,
+    "accountInfo": {
+      "totalBalance": 10000,
+      "availableBalance": 8000,
+      "currency": "USDT",
+      "accountLevel": "level_1"
+    },
+    "createdAt": 1729152000000,
+    "updatedAt": 1729238400000,
+    "owner": "demo_user_1",
+    "createBy": "demo_user_1",
+    "updateBy": "demo_user_1"
+  },
+  {
+    "_id": "config_demo_user_2",
+    "userId": "demo_user_2",
+    "apiKey": "b2c3d4e5-f6g7-8901-bcde-f23456789012",
+    "secretKey": "s3cr3t_k3y_f0r_d3m0_us3r_2_2024",
+    "passphrase": "live_passphrase_456",
+    "sandbox": false,
+    "permissions": ["read", "trade", "withdraw"],
+    "isActive": true,
+    "lastTested": 1729252800000,
+    "accountInfo": {
+      "totalBalance": 50000,
+      "availableBalance": 35000,
+      "currency": "USDT",
+      "accountLevel": "level_2"
+    },
+    "createdAt": 1729166400000,
+    "updatedAt": 1729252800000,
+    "owner": "demo_user_2",
+    "createBy": "demo_user_2",
+    "updateBy": "demo_user_2"
+  },
+  {
+    "_id": "config_demo_user_3",
+    "userId": "demo_user_3",
+    "apiKey": "c3d4e5f6-g7h8-9012-cdef-345678901234",
+    "secretKey": "s3cr3t_k3y_f0r_d3m0_us3r_3_2024",
+    "passphrase": "sandbox_test_789",
+    "sandbox": true,
+    "permissions": ["read"],
+    "isActive": false,
+    "lastTested": 1729180800000,
+    "accountInfo": {
+      "totalBalance": 1000,
+      "availableBalance": 1000,
+      "currency": "USDT",
+      "accountLevel": "level_1"
+    },
+    "createdAt": 1729180800000,
+    "updatedAt": 1729180800000,
+    "owner": "demo_user_3",
+    "createBy": "demo_user_3",
+    "updateBy": "demo_user_3"
+  }
+]
+  

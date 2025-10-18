@@ -1,0 +1,64 @@
+
+{
+  "name": "strategy",
+  "title": "量化交易策略",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "策略名称",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "策略描述",
+      "type": "String"
+    },
+    {
+      "name": "type",
+      "title": "策略类型",
+      "type": "String"
+    },
+    {
+      "name": "status",
+      "title": "策略状态",
+      "type": "String"
+    },
+    {
+      "name": "totalReturn",
+      "title": "总收益率",
+      "type": "Number"
+    },
+    {
+      "name": "sharpeRatio",
+      "title": "夏普比率",
+      "type": "Number"
+    },
+    {
+      "name": "maxDrawdown",
+      "title": "最大回撤",
+      "type": "Number"
+    },
+    {
+      "name": "winRate",
+      "title": "胜率",
+      "type": "Number"
+    },
+    {
+      "name": "symbol",
+      "title": "交易标的",
+      "type": "String"
+    },
+    {
+      "name": "dataSource",
+      "title": "数据源",
+      "type": "String"
+    },
+    {
+      "name": "lastRun",
+      "title": "最后运行时间",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    }
+  ]
+}
+  

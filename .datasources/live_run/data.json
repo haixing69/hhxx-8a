@@ -1,0 +1,159 @@
+
+[
+  {
+    "_id": "live_run_1",
+    "strategyId": "live-1",
+    "status": "running",
+    "startTime": 1729238400000,
+    "stopTime": null,
+    "currentCash": 6850.5,
+    "currentValue": 13150.75,
+    "totalReturn": 31.5,
+    "totalTrades": 12,
+    "winRate": 75,
+    "trades": [
+      {
+        "id": "trade_001",
+        "date": "2024-10-15",
+        "time": "09:30:00",
+        "symbol": "SOL-USDT",
+        "action": "BUY",
+        "price": 145.2,
+        "quantity": 10,
+        "value": 1452,
+        "commission": 1.45,
+        "type": "live"
+      },
+      {
+        "id": "trade_002",
+        "date": "2024-10-16",
+        "time": "14:15:00",
+        "symbol": "SOL-USDT",
+        "action": "SELL",
+        "price": 152.8,
+        "quantity": 10,
+        "value": 1528,
+        "commission": 1.53,
+        "profit": 73.02,
+        "type": "live"
+      },
+      {
+        "id": "trade_003",
+        "date": "2024-10-17",
+        "time": "11:20:00",
+        "symbol": "SOL-USDT",
+        "action": "BUY",
+        "price": 148.5,
+        "quantity": 15,
+        "value": 2227.5,
+        "commission": 2.23,
+        "type": "live"
+      }
+    ],
+    "parameters": {
+      "positionSize": 0.1,
+      "maxPosition": 1,
+      "stopLoss": 0.05,
+      "takeProfit": 0.1,
+      "dataSource": "okx"
+    },
+    "lastTradeTime": 1729256400000,
+    "createdAt": 1729238400000,
+    "updatedAt": 1729267200000,
+    "owner": "demo_user_1",
+    "createBy": "demo_user_1",
+    "updateBy": "demo_user_1"
+  },
+  {
+    "_id": "live_run_2",
+    "strategyId": "live-2",
+    "status": "stopped",
+    "startTime": 1728441600000,
+    "stopTime": 1728633600000,
+    "currentCash": 12210.5,
+    "currentValue": 12210.5,
+    "totalReturn": 22.1,
+    "totalTrades": 8,
+    "winRate": 87.5,
+    "trades": [
+      {
+        "id": "trade_004",
+        "date": "2024-10-10",
+        "time": "10:00:00",
+        "symbol": "DOT-USDT",
+        "action": "BUY",
+        "price": 4.25,
+        "quantity": 1000,
+        "value": 4250,
+        "commission": 4.25,
+        "type": "live"
+      },
+      {
+        "id": "trade_005",
+        "date": "2024-10-12",
+        "time": "15:30:00",
+        "symbol": "DOT-USDT",
+        "action": "SELL",
+        "price": 4.68,
+        "quantity": 1000,
+        "value": 4680,
+        "commission": 4.68,
+        "profit": 421.07,
+        "type": "live"
+      }
+    ],
+    "parameters": {
+      "positionSize": 0.15,
+      "maxPosition": 0.8,
+      "stopLoss": 0.03,
+      "takeProfit": 0.08,
+      "dataSource": "okx"
+    },
+    "lastTradeTime": 1728633600000,
+    "createdAt": 1728441600000,
+    "updatedAt": 1728633600000,
+    "owner": "demo_user_1",
+    "createBy": "demo_user_1",
+    "updateBy": "demo_user_1"
+  },
+  {
+    "_id": "live_run_3",
+    "strategyId": "live-3",
+    "status": "running",
+    "startTime": 1729256400000,
+    "stopTime": null,
+    "currentCash": 8170.25,
+    "currentValue": 11830.75,
+    "totalReturn": 18.3,
+    "totalTrades": 5,
+    "winRate": 60,
+    "trades": [
+      {
+        "id": "trade_006",
+        "date": "2024-10-18",
+        "time": "09:15:00",
+        "symbol": "ADA-USDT",
+        "action": "BUY",
+        "price": 0.358,
+        "quantity": 5000,
+        "value": 1790,
+        "commission": 1.79,
+        "type": "live"
+      }
+    ],
+    "parameters": {
+      "positionSize": 0.08,
+      "maxPosition": 0.5,
+      "stopLoss": 0.04,
+      "takeProfit": 0.12,
+      "dataSource": "okx"
+    },
+    "lastTradeTime": 1729256400000,
+    "createdAt": 1729256400000,
+    "updatedAt": 1729260000000,
+    "owner": "demo_user_1",
+    "createBy": "demo_user_1",
+    "updateBy": "demo_user_1"
+  }
+]
+  

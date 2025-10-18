@@ -1,0 +1,96 @@
+
+{
+  "name": "backtest_result",
+  "title": "回测结果",
+  "schemas": [
+    {
+      "name": "strategyId",
+      "title": "策略ID",
+      "type": "String"
+    },
+    {
+      "name": "startDate",
+      "title": "开始日期",
+      "type": "Date",
+      "format": "date"
+    },
+    {
+      "name": "endDate",
+      "title": "结束日期",
+      "type": "Date",
+      "format": "date"
+    },
+    {
+      "name": "initialCash",
+      "title": "初始资金",
+      "type": "Number"
+    },
+    {
+      "name": "finalValue",
+      "title": "最终价值",
+      "type": "Number"
+    },
+    {
+      "name": "totalReturn",
+      "title": "总收益率",
+      "type": "Number"
+    },
+    {
+      "name": "annualReturn",
+      "title": "年化收益率",
+      "type": "Number"
+    },
+    {
+      "name": "sharpeRatio",
+      "title": "夏普比率",
+      "type": "Number"
+    },
+    {
+      "name": "maxDrawdown",
+      "title": "最大回撤",
+      "type": "Number"
+    },
+    {
+      "name": "winRate",
+      "title": "胜率",
+      "type": "Number"
+    },
+    {
+      "name": "totalTrades",
+      "title": "总交易次数",
+      "type": "Number"
+    },
+    {
+      "name": "profitFactor",
+      "title": "盈利因子",
+      "type": "Number"
+    },
+    {
+      "name": "avgHoldingDays",
+      "title": "平均持仓天数",
+      "type": "Number"
+    },
+    {
+      "name": "trades",
+      "title": "交易记录",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    },
+    {
+      "name": "equityCurve",
+      "title": "净值曲线",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    },
+    {
+      "name": "parameters",
+      "title": "回测参数",
+      "type": "Object"
+    }
+  ]
+}
+  
