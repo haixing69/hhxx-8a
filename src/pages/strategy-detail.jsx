@@ -1,56 +1,54 @@
 // @ts-ignore;
 import React, { useState, useEffect, useRef } from 'react';
 // @ts-ignore;
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Tabs, TabsContent, TabsList, TabsTrigger, Alert, AlertDescription } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, Badge, Button, Alert, AlertDescription, AlertTitle } from '@/components/ui';
 // @ts-ignore;
-import { Play, Pause, RefreshCw, Settings, Clock, TrendingUp, TrendingDown, DollarSign, Target, BarChart3, AlertCircle, Eye, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, Clock, BarChart3, DollarSign, Activity, Target, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 
 // @ts-ignore;
 import { StrategyPerformanceCard } from '@/components/StrategyPerformanceCard';
 // @ts-ignore;
-import { StrategyChart } from '@/components/StrategyChart';
-// @ts-ignore;
-import { StrategyCodeViewer } from '@/components/StrategyCodeViewer';
+import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 // @ts-ignore;
 import { TradeHistoryTable } from '@/components/TradeHistoryTable';
 // @ts-ignore;
-import { PerformanceMetrics } from '@/components/PerformanceMetrics';
-// @ts-ignore;
 import { TradingViewChart } from '@/components/TradingViewChart';
+// @ts-ignore;
+import { StrategyCodeViewer } from '@/components/StrategyCodeViewer';
 // @ts-ignore;
 import { RealTimePrice } from '@/components/RealTimePrice';
 // @ts-ignore;
 import { StrategySignals } from '@/components/StrategySignals';
 // @ts-ignore;
 import { SignalOverlay } from '@/components/SignalOverlay';
-export default function StrategyDetailPage(props) {
+export default function StrategyDetail(props) {
   const {
-    $w,
-    style
+    $w
   } = props;
+  const strategyId = $w.page.dataset.params?.id;
   const [strategy, setStrategy] = useState(null);
-  const [backtestResult, setBacktestResult] = useState(null);
-  const [liveRun, setLiveRun] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
-  const [isLive, setIsLive] = useState(false);
-  const [realTimeData, setRealTimeData] = useState(null);
+  const [realtimeData, setRealtimeData] = useState(null);
   const [signals, setSignals] = useState([]);
-  const [priceAlerts, setPriceAlerts] = useState([]);
-  const [refreshInterval, setRefreshInterval] = useState(null);
-  const strategyId = props.$w.page.dataset.params?.id;
+  const [refreshing, setRefreshing] = useState(false);
+  const [timeframe, setTimeframe] = useState('1h');
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [wsConnection, setWsConnection] = useState('disconnected'); // disconnected, connecting, connected, error
+  const [wsError, setWsError] = useState(null);
+  const wsRef = useRef(null);
 
   // 加载策略详情
   const loadStrategy = async () => {
     if (!strategyId) {
-      $w.utils.navigateTo({
-        pageId: 'index'
-      });
+      setError('策略ID不能为空');
+      setLoading(false);
       return;
     }
     try {
       setLoading(true);
-      const [strategyData, backtestData, liveData] = await Promise.all([$w.cloud.callDataSource({
+      const result = await $w.cloud.callDataSource({
         dataSourceName: 'strategy',
         methodName: 'wedaGetItemV2',
         params: {
@@ -65,63 +63,37 @@ export default function StrategyDetailPage(props) {
             $master: true
           }
         }
-      }), $w.cloud.callDataSource({
-        dataSourceName: 'backtest_result',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              strategyId: {
-                $eq: strategyId
-              }
-            }
-          },
-          orderBy: [{
-            createdAt: 'desc'
-          }],
-          limit: 1
-        }
-      }), $w.cloud.callDataSource({
-        dataSourceName: 'live_run',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              strategyId: {
-                $eq: strategyId
-              }
-            }
-          },
-          orderBy: [{
-            createdAt: 'desc'
-          }],
-          limit: 1
-        }
-      })]);
-      setStrategy(strategyData);
-      setBacktestResult(backtestData.records?.[0] || null);
-      setLiveRun(liveData.records?.[0] || null);
-      setIsLive(liveData.records?.[0]?.status === 'running');
+      });
+      if (result) {
+        setStrategy(result);
+        // 加载初始数据
+        await Promise.all([loadRealtimeData(result.symbol), loadSignals()]);
+        // 建立WebSocket连接
+        connectWebSocket();
+      } else {
+        setError('策略不存在');
+      }
     } catch (error) {
       console.error('加载策略失败:', error);
+      setError('加载策略失败: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // 加载实时数据
-  const loadRealTimeData = async () => {
-    if (!strategy) return;
+  // 加载实时行情数据
+  const loadRealtimeData = async symbol => {
     try {
       const result = await $w.cloud.callFunction({
         name: 'backtrader',
         data: {
-          action: 'get_realtime_price',
-          symbol: strategy.symbol
+          action: 'get_realtime_data',
+          symbol: symbol
         }
       });
       if (result.success) {
-        setRealTimeData(result.data);
+        setRealtimeData(result.data);
+        setLastUpdate(new Date());
       }
     } catch (error) {
       console.error('加载实时数据失败:', error);
@@ -130,270 +102,343 @@ export default function StrategyDetailPage(props) {
 
   // 加载策略信号
   const loadSignals = async () => {
-    if (!strategy) return;
+    if (!strategyId) return;
     try {
-      const result = await $w.cloud.callFunction({
-        name: 'backtrader',
-        data: {
-          action: 'get_strategy_signals',
-          strategyId: strategyId,
-          symbol: strategy.symbol
+      const result = await $w.cloud.callDataSource({
+        dataSourceName: 'signal',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              strategyId: {
+                $eq: strategyId
+              }
+            }
+          },
+          orderBy: [{
+            timestamp: 'desc'
+          }],
+          limit: 50
         }
       });
-      if (result.success) {
-        setSignals(result.signals || []);
+      if (result.records) {
+        setSignals(result.records);
+        setLastUpdate(new Date());
       }
     } catch (error) {
       console.error('加载策略信号失败:', error);
     }
   };
 
-  // 实时数据轮询
-  useEffect(() => {
-    if (isLive) {
-      loadRealTimeData();
-      loadSignals();
-      const interval = setInterval(() => {
-        loadRealTimeData();
-        loadSignals();
+  // 建立WebSocket连接
+  const connectWebSocket = () => {
+    if (!strategyId) return;
+    setWsConnection('connecting');
+    try {
+      // 使用云开发实时推送功能
+      const tcb = $w.cloud.getCloudInstance();
+      const db = tcb.database();
+
+      // 监听 signal 数据模型的变化
+      const watcher = db.collection('signal').where({
+        strategyId: strategyId
+      }).watch({
+        onChange: snapshot => {
+          if (snapshot.type === 'init') {
+            setWsConnection('connected');
+            setWsError(null);
+          } else if (snapshot.type === 'change') {
+            // 处理新增的信号
+            const newSignals = snapshot.docs.map(doc => doc);
+            setSignals(prevSignals => {
+              // 合并并去重
+              const allSignals = [...newSignals, ...prevSignals];
+              const uniqueSignals = allSignals.filter((signal, index, self) => index === self.findIndex(s => s._id === signal._id));
+              return uniqueSignals.sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
+            });
+            setLastUpdate(new Date());
+          }
+        },
+        onError: error => {
+          console.error('WebSocket连接错误:', error);
+          setWsConnection('error');
+          setWsError(error.message);
+        }
+      });
+      wsRef.current = watcher;
+
+      // 5秒后如果还没连接成功，尝试轮询
+      setTimeout(() => {
+        if (wsConnection === 'connecting') {
+          setWsConnection('disconnected');
+          // 启动轮询作为备选方案
+          const interval = setInterval(loadSignals, 5000);
+          wsRef.current = {
+            close: () => clearInterval(interval)
+          };
+        }
       }, 5000);
-      setRefreshInterval(interval);
-      return () => {
-        if (interval) clearInterval(interval);
+    } catch (error) {
+      console.error('建立WebSocket连接失败:', error);
+      setWsConnection('error');
+      setWsError(error.message);
+      // 使用轮询作为备选方案
+      const interval = setInterval(loadSignals, 5000);
+      wsRef.current = {
+        close: () => clearInterval(interval)
       };
     }
-  }, [isLive, strategy]);
+  };
+
+  // 手动刷新所有数据
+  const refreshAllData = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([loadRealtimeData(strategy.symbol), loadSignals()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // 清理WebSocket连接
+  useEffect(() => {
+    return () => {
+      if (wsRef.current && wsRef.current.close) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
 
   // 初始加载
   useEffect(() => {
     loadStrategy();
   }, [strategyId]);
 
-  // 计算价格提醒
-  useEffect(() => {
-    if (realTimeData && strategy) {
-      const alerts = [];
-      const currentPrice = realTimeData.price;
-      const {
-        parameters
-      } = strategy;
+  // 格式化函数
+  const formatCurrency = value => {
+    return new Intl.NumberFormat('zh-CN', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value || 0);
+  };
+  const formatPercent = value => {
+    return `${value >= 0 ? '+' : ''}${(value || 0).toFixed(2)}%`;
+  };
+  const formatNumber = value => {
+    return new Intl.NumberFormat('zh-CN').format(value || 0);
+  };
+  const formatTime = timestamp => {
+    return new Date(timestamp).toLocaleString('zh-CN');
+  };
 
-      // 检查止损提醒
-      if (parameters.stopLoss) {
-        const stopLossPrice = currentPrice * (1 - parameters.stopLoss);
-        alerts.push({
-          type: 'stop_loss',
-          price: stopLossPrice,
-          message: `止损提醒: 价格接近 ${stopLossPrice.toFixed(2)}`,
-          severity: 'warning'
-        });
+  // 连接状态指示器
+  const ConnectionStatus = () => {
+    const statusConfig = {
+      connected: {
+        icon: Wifi,
+        color: 'text-green-400',
+        text: '实时连接'
+      },
+      connecting: {
+        icon: RefreshCw,
+        color: 'text-yellow-400',
+        text: '连接中...'
+      },
+      disconnected: {
+        icon: WifiOff,
+        color: 'text-gray-400',
+        text: '已断开'
+      },
+      error: {
+        icon: AlertCircle,
+        color: 'text-red-400',
+        text: '连接错误'
       }
+    };
+    const config = statusConfig[wsConnection] || statusConfig.disconnected;
+    return <div className={`flex items-center space-x-2 text-sm ${config.color}`}>
+        <config.icon className="w-4 h-4" />
+        <span>{config.text}</span>
+      </div>;
+  };
 
-      // 检查止盈提醒
-      if (parameters.takeProfit) {
-        const takeProfitPrice = currentPrice * (1 + parameters.takeProfit);
-        alerts.push({
-          type: 'take_profit',
-          price: takeProfitPrice,
-          message: `止盈提醒: 价格接近 ${takeProfitPrice.toFixed(2)}`,
-          severity: 'info'
-        });
-      }
-      setPriceAlerts(alerts);
-    }
-  }, [realTimeData, strategy]);
-  const handleStartLive = async () => {
-    try {
-      const result = await $w.cloud.callFunction({
-        name: 'backtrader',
-        data: {
-          action: 'start_live_trading',
-          strategyId: strategyId,
-          symbol: strategy.symbol,
-          parameters: strategy.parameters
-        }
-      });
-      if (result.success) {
-        setIsLive(true);
-      }
-    } catch (error) {
-      console.error('启动实盘失败:', error);
-    }
-  };
-  const handleStopLive = async () => {
-    try {
-      const result = await $w.cloud.callFunction({
-        name: 'backtrader',
-        data: {
-          action: 'stop_live_trading',
-          strategyId: strategyId
-        }
-      });
-      if (result.success) {
-        setIsLive(false);
-      }
-    } catch (error) {
-      console.error('停止实盘失败:', error);
-    }
-  };
-  const handleBack = () => {
-    $w.utils.navigateBack();
-  };
-  const handleEdit = () => {
-    $w.utils.navigateTo({
-      pageId: 'strategy-edit',
-      params: {
-        id: strategyId
-      }
-    });
-  };
-  if (loading) {
-    return <div style={style} className="min-h-screen bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-700 rounded w-1/4 mb-4"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="h-64 bg-gray-700 rounded"></div>
-              <div className="h-64 bg-gray-700 rounded"></div>
-              <div className="h-64 bg-gray-700 rounded"></div>
+  // 实时行情卡片
+  const RealtimeCard = () => {
+    if (!realtimeData) return null;
+    const change = realtimeData.change24h || 0;
+    const isPositive = change >= 0;
+    return <Card className="bg-gray-800 border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center justify-between">
+            <span>实时行情</span>
+            <div className="flex items-center space-x-2">
+              <ConnectionStatus />
+              <Button variant="ghost" size="sm" onClick={refreshAllData} disabled={refreshing} className="text-gray-400 hover:text-white">
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-white">{formatCurrency(realtimeData.price)}</div>
+              <div className={`text-sm ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                {formatPercent(change)}
+              </div>
+              <div className="text-xs text-gray-400">当前价格</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold text-white">{formatCurrency(realtimeData.high24h)}</div>
+              <div className="text-xs text-gray-400">24h最高</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold text-white">{formatCurrency(realtimeData.low24h)}</div>
+              <div className="text-xs text-gray-400">24h最低</div>
+            </div>
+            <div className="text-center">
+              <div className="text-lg font-semibold text-white">{formatNumber(realtimeData.volume24h)}</div>
+              <div className="text-xs text-gray-400">24h成交量</div>
             </div>
           </div>
-        </div>
+          {lastUpdate && <div className="mt-4 text-xs text-gray-400 text-center">
+              最后更新: {formatTime(lastUpdate.getTime())}
+            </div>}
+        </CardContent>
+      </Card>;
+  };
+
+  // 时间周期选择器
+  const TimeframeSelector = () => {
+    const timeframes = [{
+      value: '1m',
+      label: '1分钟'
+    }, {
+      value: '5m',
+      label: '5分钟'
+    }, {
+      value: '15m',
+      label: '15分钟'
+    }, {
+      value: '1h',
+      label: '1小时'
+    }, {
+      value: '4h',
+      label: '4小时'
+    }, {
+      value: '1d',
+      label: '1天'
+    }];
+    return <div className="flex space-x-2 mb-4">
+        {timeframes.map(tf => <Button key={tf.value} variant={timeframe === tf.value ? 'default' : 'outline'} size="sm" onClick={() => setTimeframe(tf.value)} className={timeframe === tf.value ? 'bg-blue-600' : 'border-gray-600 text-gray-300'}>
+            {tf.label}
+          </Button>)}
+      </div>;
+  };
+  if (loading) {
+    return <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+        <span className="ml-2 text-white">加载中...</span>
+      </div>;
+  }
+  if (error) {
+    return <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertTitle>错误</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       </div>;
   }
   if (!strategy) {
-    return <div style={style} className="min-h-screen bg-gray-900 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center text-gray-400">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-white mb-2">策略不存在</h2>
-            <p className="mb-4">无法找到指定的策略</p>
-            <Button onClick={handleBack} variant="outline" className="border-gray-600 text-gray-300 hover:text-white">
-              返回
-            </Button>
-          </div>
-        </div>
+    return <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertTitle>策略不存在</AlertTitle>
+          <AlertDescription>请检查策略ID是否正确</AlertDescription>
+        </Alert>
       </div>;
   }
-  return <div style={style} className="min-h-screen bg-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* 头部 */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={handleBack} className="text-gray-400 hover:text-white">
-              <TrendingUp className="w-5 h-5 mr-2" />
+  return <div className="min-h-screen bg-gray-900">
+      <div className="max-w-7xl mx-auto p-4 space-y-6">
+        {/* 页面头部 */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">{strategy.name}</h1>
+            <p className="text-gray-400">{strategy.description}</p>
+          </div>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={() => $w.utils.navigateBack()} className="border-gray-600 text-gray-300">
               返回
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-white">{strategy.name}</h1>
-              <p className="text-gray-400 mt-1">{strategy.description}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Badge variant={isLive ? "default" : "secondary"} className={isLive ? "bg-green-600" : "bg-gray-600"}>
-              {isLive ? "实盘运行中" : "已停止"}
-            </Badge>
-            <Button onClick={handleEdit} variant="outline" className="border-gray-600 text-gray-300 hover:text-white">
-              <Settings className="w-4 h-4 mr-2" />
-              编辑
+            <Button onClick={() => $w.utils.navigateTo({
+            pageId: 'strategy-edit',
+            params: {
+              id: strategyId
+            }
+          })} className="bg-blue-600 hover:bg-blue-700">
+              编辑策略
             </Button>
-            {isLive ? <Button onClick={handleStopLive} variant="destructive" className="bg-red-600 hover:bg-red-700">
-                <Pause className="w-4 h-4 mr-2" />
-                停止实盘
-              </Button> : <Button onClick={handleStartLive} className="bg-green-600 hover:bg-green-700">
-                <Play className="w-4 h-4 mr-2" />
-                启动实盘
-              </Button>}
           </div>
         </div>
 
-        {/* 实时行情面板 */}
-        {realTimeData && <RealTimePrice data={realTimeData} symbol={strategy.symbol} />}
+        {/* 实时行情卡片 */}
+        <RealtimeCard />
 
-        {/* 价格提醒 */}
-        {priceAlerts.length > 0 && <div className="mb-4 space-y-2">
-            {priceAlerts.map((alert, index) => <Alert key={index} className={alert.severity === 'warning' ? 'bg-yellow-900/20 border-yellow-800' : 'bg-blue-900/20 border-blue-800'}>
-                <AlertDescription className="text-white">
-                  <div className="flex items-center">
-                    <Zap className="w-4 h-4 mr-2" />
-                    {alert.message}
-                  </div>
-                </AlertDescription>
-              </Alert>)}
-          </div>}
+        {/* WebSocket 错误提示 */}
+        {wsError && <Alert variant="destructive" className="bg-red-900/20 border-red-700">
+            <AlertTitle>连接问题</AlertTitle>
+            <AlertDescription>{wsError}，已启用轮询模式</AlertDescription>
+          </Alert>}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-800 border-gray-700">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              概览
-            </TabsTrigger>
-            <TabsTrigger value="chart" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              图表
-            </TabsTrigger>
-            <TabsTrigger value="performance" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              表现
-            </TabsTrigger>
-            <TabsTrigger value="code" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              代码
-            </TabsTrigger>
-          </TabsList>
+        {/* 标签页导航 */}
+        <div className="border-b border-gray-700">
+          <nav className="flex space-x-8">
+            {[{
+            id: 'overview',
+            label: '概览'
+          }, {
+            id: 'chart',
+            label: '图表'
+          }, {
+            id: 'performance',
+            label: '性能'
+          }, {
+            id: 'trades',
+            label: '交易记录'
+          }, {
+            id: 'code',
+            label: '代码'
+          }].map(tab => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`py-2 px-1 border-b-2 text-sm font-medium ${activeTab === tab.id ? 'border-blue-500 text-blue-400' : 'border-transparent text-gray-400 hover:text-gray-300'}`}>
+                {tab.label}
+              </button>)}
+          </nav>
+        </div>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <StrategyChart data={backtestResult} />
+        {/* 内容区域 */}
+        <div>
+          {activeTab === 'overview' && <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <StrategyPerformanceCard data={strategy.backtestResult} />
+                <PerformanceMetrics data={strategy.backtestResult} />
               </div>
-              <div>
-                <StrategyPerformanceCard data={backtestResult} />
-              </div>
-            </div>
+              <StrategySignals strategyId={strategyId} symbol={strategy.symbol} />
+            </div>}
 
-            {isLive && <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center">
-                      <Eye className="w-5 h-5 mr-2" />
-                      实时策略信号
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <StrategySignals signals={signals} />
-                  </CardContent>
-                </Card>
+          {activeTab === 'chart' && <div className="space-y-4">
+              <TimeframeSelector />
+              <TradingViewChart symbol={strategy.symbol} timeframe={timeframe} trades={signals} height={500} />
+            </div>}
 
-                <Card className="bg-gray-800 border-gray-700">
-                  <CardHeader>
-                    <CardTitle className="text-white">实时K线图</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <TradingViewChart symbol={strategy.symbol} timeframe={strategy.backtestConfig?.timeframe || '1h'} trades={signals} />
-                  </CardContent>
-                </Card>
-              </div>}
-          </TabsContent>
+          {activeTab === 'performance' && <div className="space-y-6">
+              <StrategyPerformanceCard data={strategy.backtestResult} />
+              <PerformanceMetrics data={strategy.backtestResult} />
+            </div>}
 
-          <TabsContent value="chart" className="space-y-6">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">策略回测图表</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SignalOverlay data={backtestResult} signals={signals} />
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {activeTab === 'trades' && <TradeHistoryTable trades={strategy.trades || []} />}
 
-          <TabsContent value="performance" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PerformanceMetrics data={backtestResult} />
-              <TradeHistoryTable trades={backtestResult?.trades || []} />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="code" className="space-y-6">
-            <StrategyCodeViewer code={strategy.code} language="python" />
-          </TabsContent>
-        </Tabs>
+          {activeTab === 'code' && <StrategyCodeViewer code={strategy.code} language="python" />}
+        </div>
       </div>
     </div>;
 }

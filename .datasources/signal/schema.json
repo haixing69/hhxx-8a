@@ -1,0 +1,58 @@
+
+{
+  "name": "signal",
+  "title": "策略信号",
+  "schemas": [
+    {
+      "name": "strategyId",
+      "title": "策略ID",
+      "type": "String"
+    },
+    {
+      "name": "symbol",
+      "title": "交易标的",
+      "type": "String"
+    },
+    {
+      "name": "side",
+      "title": "交易方向",
+      "type": "String"
+    },
+    {
+      "name": "price",
+      "title": "信号价格",
+      "type": "Number"
+    },
+    {
+      "name": "quantity",
+      "title": "交易数量",
+      "type": "Number"
+    },
+    {
+      "name": "timestamp",
+      "title": "信号时间戳",
+      "type": "Number"
+    },
+    {
+      "name": "status",
+      "title": "信号状态",
+      "type": "String"
+    },
+    {
+      "name": "confidence",
+      "title": "置信度",
+      "type": "Number"
+    },
+    {
+      "name": "executed",
+      "title": "是否已执行",
+      "type": "Boolean"
+    },
+    {
+      "name": "reason",
+      "title": "信号原因",
+      "type": "String"
+    }
+  ]
+}
+  

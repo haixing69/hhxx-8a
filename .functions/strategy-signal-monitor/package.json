@@ -1,0 +1,12 @@
+
+    {
+      "name": "strategy-signal-monitor",
+      "version": "1.0.0",
+      "description": "监听策略运行状态，生成交易信号并实时推送",
+      "main": "index.js",
+      "dependencies": {
+        "@cloudbase/node-sdk": "^3.3.7",
+        "ws": "^8.14.2"
+      }
+    }
+  
